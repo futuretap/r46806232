@@ -26,6 +26,10 @@ class MasterViewController: UIViewController, UITableViewDataSource, UITableView
 	
 	// MARK: - Table View
 	
+	func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+		return indexPath.row == 0 ? 350 : UITableView.automaticDimension
+	}
+	
 	func numberOfSections(in tableView: UITableView) -> Int {
 		return 1
 	}
