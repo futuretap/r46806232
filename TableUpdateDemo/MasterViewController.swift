@@ -14,17 +14,28 @@ class MasterViewController: UIViewController, UITableViewDataSource, UITableView
 	
 	var objects = [Any]()
 	var selectedIndexSet = IndexSet()
+	var rowHeights = [IndexPath: CGFloat]()
 	
 	@objc
 	@IBAction func insertNewObject(_ sender: Any) {
-		objects.insert(NSDate(), at: 0)
-		selectedIndexSet.shift(startingAt: 0, by: 1)
-		let indexPath = IndexPath(row: 0, section: 0)
+		let indexPath = IndexPath(row: objects.count, section: 0)
+		objects.append(NSDate())
 		tableView.insertRows(at: [indexPath], with: .automatic)
 		self.view.setNeedsLayout()
 	}
 	
 	// MARK: - Table View
+	func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+		if let height = rowHeights[indexPath] {
+			return height
+		}
+		
+		let cell = tableView.dequeueReusableCell(withIdentifier: "MyTableViewCell") as! MyTableViewCell
+		populate(cell: cell, indexPath: indexPath)
+		let height = cell.systemLayoutSizeFitting(UIView.layoutFittingCompressedSize).height
+		rowHeights[indexPath] = height
+		return height
+	}
 	
 	func numberOfSections(in tableView: UITableView) -> Int {
 		return 1
@@ -37,9 +48,13 @@ class MasterViewController: UIViewController, UITableViewDataSource, UITableView
 	func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
 		let cell = tableView.dequeueReusableCell(withIdentifier: "MyTableViewCell", for: indexPath) as! MyTableViewCell
 		
+		populate(cell: cell, indexPath: indexPath)
+		return cell
+	}
+	
+	func populate(cell: MyTableViewCell, indexPath: IndexPath) {
 		let object = objects[indexPath.row] as! NSDate
 		cell.label!.text = "\(selectedIndexSet.contains(indexPath.row) ? "Selected:" : "")\(selectedIndexSet.contains(indexPath.row) && indexPath.row % 2 == 1 ? "\n\n" : "\n")\(object.description)"
-		return cell
 	}
 	
 	func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
@@ -57,6 +72,7 @@ class MasterViewController: UIViewController, UITableViewDataSource, UITableView
 	}
 
 	func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+		rowHeights.removeValue(forKey: indexPath)
 		tableView.beginUpdates()
 		
 		if self.selectedIndexSet.contains(indexPath.row) {
